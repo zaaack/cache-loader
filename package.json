@@ -1,5 +1,5 @@
 {
-  "name": "cache-loader",
+  "name": "@zaaack/cache-loader",
   "version": "1.0.3",
   "description": "Caches the result of following loaders on disk.",
   "main": "dist/cjs.js",
@@ -22,16 +22,18 @@
     "webpack-defaults": "webpack-defaults",
     "appveyor:test": "npm run test"
   },
-  "author": "Tobias Koppers @sokra",
+  "author": ["Tobias Koppers @sokra", "Zack Young"],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:webpack-contrib/cache-loader.git"
+    "url": "git@github.com:zaaack/cache-loader.git"
   },
   "dependencies": {
     "async": "^2.4.1",
+    "level": "^2.0.0-rc2",
     "loader-utils": "^1.1.0",
-    "mkdirp": "^0.5.1"
+    "mkdirp": "^0.5.1",
+    "xxhash": "^0.2.4"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

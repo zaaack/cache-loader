@@ -1,13 +1,21 @@
 const fs = require('fs');
-const crypto = require('crypto');
 const path = require('path');
-const mkdirp = require('mkdirp');
 const async = require('async');
 const loaderUtils = require('loader-utils');
+const level = require('level');
+const xxhash = require('xxhash');
 const pkgVersion = require('../package.json').version;
 
 const defaultCacheDirectory = path.resolve('.cache-loader');
 const ENV = process.env.NODE_ENV || 'development';
+let internalDB;
+
+function getDB(cacheDirectory) {
+  if (!internalDB) {
+    internalDB = level(`${cacheDirectory}/data.db`);
+  }
+  return internalDB;
+}
 
 function loader(...args) {
   const callback = this.async();
@@ -35,30 +43,17 @@ function loader(...args) {
       return;
     }
     const [deps, contextDeps] = taskResults;
-    const writeCacheFile = () => {
-      fs.writeFile(data.cacheFile, JSON.stringify({
-        remainingRequest: data.remainingRequest,
-        cacheIdentifier: data.cacheIdentifier,
-        dependencies: deps,
-        contextDependencies: contextDeps,
-        result: args,
-      }), 'utf-8', () => {
-        // ignore errors here
-        callback(null, ...args);
-      });
-    };
-    if (data.fileExists) {
-      // for performance skip creating directory
-      writeCacheFile();
-    } else {
-      mkdirp(path.dirname(data.cacheFile), (mkdirErr) => {
-        if (mkdirErr) {
-          callback(null, ...args);
-          return;
-        }
-        writeCacheFile();
-      });
-    }
+    const db = getDB(data.cacheDirectory);
+    db.put(data.hash, JSON.stringify({
+      remainingRequest: data.remainingRequest,
+      cacheIdentifier: data.cacheIdentifier,
+      dependencies: deps,
+      contextDependencies: contextDeps,
+      result: args,
+    }), () => {
+      // ignore errors here
+      callback(null, ...args);
+    });
   });
 }
 
@@ -73,12 +68,14 @@ function pitch(remainingRequest, prevRequest, dataInput) {
   const data = dataInput;
   const callback = this.async();
   const hash = digest(`${cacheIdentifier}\n${remainingRequest}`);
-  const cacheFile = path.join(cacheDirectory, `${hash}.json`);
+  // const cacheFile = path.join(cacheDirectory, `${hash}.json`);
   data.remainingRequest = remainingRequest;
   data.cacheIdentifier = cacheIdentifier;
-  data.cacheFile = cacheFile;
-  fs.readFile(cacheFile, 'utf-8', (readFileErr, content) => {
-    if (readFileErr) {
+  data.cacheDirectory = cacheDirectory;
+  data.hash = hash;
+  const db = getDB(cacheDirectory);
+  db.get(hash, (dbErr, content) => {
+    if (dbErr) {
       callback();
       return;
     }
@@ -120,7 +117,7 @@ function pitch(remainingRequest, prevRequest, dataInput) {
 }
 
 function digest(str) {
-  return crypto.createHash('md5').update(str).digest('hex');
+  return xxhash.hash(Buffer.from(str), 0xCAFEBABE);
 }
 
 export { loader as default, pitch };
