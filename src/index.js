@@ -3,16 +3,23 @@ const path = require('path');
 const async = require('async');
 const loaderUtils = require('loader-utils');
 const level = require('level');
+const levelTTL = require('level-ttl');
 const xxhash = require('xxhash');
 const pkgVersion = require('../package.json').version;
 
 const defaultCacheDirectory = path.resolve('.cache-loader');
 const ENV = process.env.NODE_ENV || 'development';
+const DAY = 24 * 3600 * 1000;
 let internalDB;
 
-function getDB(cacheDirectory) {
+function getDB(cacheDirectory, defaultTTL = DAY * 30) {
   if (!internalDB) {
     internalDB = level(`${cacheDirectory}/data.db`);
+    internalDB = levelTTL(internalDB, {
+      // one day
+      checkFrequency: DAY,
+      defaultTTL,
+    });
   }
   return internalDB;
 }
@@ -43,7 +50,7 @@ function loader(...args) {
       return;
     }
     const [deps, contextDeps] = taskResults;
-    const db = getDB(data.cacheDirectory);
+    const db = getDB(data.cacheDirectory, data.ttl);
     db.put(data.hash, JSON.stringify({
       remainingRequest: data.remainingRequest,
       cacheIdentifier: data.cacheIdentifier,
@@ -62,9 +69,10 @@ function pitch(remainingRequest, prevRequest, dataInput) {
   const defaultOptions = {
     cacheDirectory: defaultCacheDirectory,
     cacheIdentifier: `cache-loader:${pkgVersion} ${ENV}`,
+    ttl: DAY * 30,
   };
   const options = Object.assign({}, defaultOptions, loaderOptions);
-  const { cacheIdentifier, cacheDirectory } = options;
+  const { cacheIdentifier, cacheDirectory, ttl } = options;
   const data = dataInput;
   const callback = this.async();
   const hash = digest(`${cacheIdentifier}\n${remainingRequest}`);
@@ -72,8 +80,9 @@ function pitch(remainingRequest, prevRequest, dataInput) {
   data.remainingRequest = remainingRequest;
   data.cacheIdentifier = cacheIdentifier;
   data.cacheDirectory = cacheDirectory;
+  data.ttl = ttl;
   data.hash = hash;
-  const db = getDB(cacheDirectory);
+  const db = getDB(cacheDirectory, ttl);
   db.get(hash, (dbErr, content) => {
     if (dbErr) {
       callback();

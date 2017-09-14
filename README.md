@@ -16,7 +16,7 @@
 <h2 align="center">Install</h2>
 
 ```bash
-npm install --save-dev cache-loader
+npm install --save-dev @zaaack/cache-loader
 ```
 
 <h2 align="center">Usage</h2>
@@ -31,7 +31,7 @@ module.exports = {
       {
         test: /\.ext$/,
         use: [
-          'cache-loader',
+          '@zaaack/cache-loader',
           ...loaders
         ],
         include: path.resolve('src')
@@ -41,7 +41,9 @@ module.exports = {
 }
 ```
 
-> ⚠️ Note that there is an overhead for saving the reading and saving the cache file, so only use this loader to cache expensive loaders.
+> ⚠️ Note:
+> 1. This is a fork version of original [cache-loader](https://github.com/webpack-contrib/cache-loader), by using leveldb & xxhash & level-ttl, we can make cache faster and easier!
+> 2. There is an overhead for saving the reading and saving the cache file, so only use this loader to cache expensive loaders.
 
 <h2 align="center">Options</h2>
 
@@ -49,6 +51,7 @@ module.exports = {
 |:--:|:--:|:-----:|:----------|
 |**`cacheDirectory`**|`{String}`|`path.resolve('.cache-loader')`|Provide a cache directory where cache items should be stored|
 |**`cacheIdentifier`**|`{String}`|`cache-loader:{version} {process.env.NODE_ENV}`|Provide an invalidation identifier which is used to generate the hashes. You can use it for extra dependencies of loaders.|
+|**`ttl`**|`{Number}`|30 * 24 * 3600 * 1000 (30 days by ms)| TTL(time to live) for cache. |
 
 <h2 align="center">Examples</h2>
 
@@ -60,7 +63,7 @@ module.exports = {
       {
         test: /\.js$/,
         use: [
-          'cache-loader',
+          '@zaaack/cache-loader',
           'babel-loader'
         ],
         include: path.resolve('src')
@@ -81,7 +84,7 @@ module.exports = {
         test: /\.js$/,
         use: [
           {
-            loader: 'cache-loader',
+            loader: '@zaaack/cache-loader',
             options: {
               cacheDirectory: path.resolve('.cache')
             }
@@ -142,25 +145,32 @@ module.exports = {
           Alexander Krasnoyarov
         </a>
       </td>
+      <td align="center">
+        <a href="https://github.com/zaaack">
+          <img width="150" height="150" src="https://github.com/zaaack.png?v=3&s=150">
+          </br>
+          Zack Young
+        </a>
+      </td>
     </tr>
   <tbody>
 </table>
 
 
-[npm]: https://img.shields.io/npm/v/cache-loader.svg
-[npm-url]: https://npmjs.com/package/cache-loader
+[npm]: https://img.shields.io/npm/v/@zaaack/cache-loader.svg
+[npm-url]: https://npmjs.com/package/@zaaack/cache-loader
 
-[node]: https://img.shields.io/node/v/cache-loader.svg
+[node]: https://img.shields.io/node/v/@zaaack/cache-loader.svg
 [node-url]: https://nodejs.org
 
-[deps]: https://david-dm.org/webpack-contrib/cache-loader.svg
-[deps-url]: https://david-dm.org/webpack-contrib/cache-loader
+[deps]: https://david-dm.org/zaaack/@zaaack/cache-loader.svg
+[deps-url]: https://david-dm.org/zaaack/@zaaack/cache-loader
 
 [chat]: https://img.shields.io/badge/gitter-webpack%2Fwebpack-brightgreen.svg
 [chat-url]: https://gitter.im/webpack/webpack
 
-[test]: http://img.shields.io/travis/webpack-contrib/cache-loader.svg
-[test-url]: https://travis-ci.org/webpack-contrib/cache-loader
+[test]: http://img.shields.io/travis/zaaack/@zaaack/cache-loader.svg
+[test-url]: https://travis-ci.org/zaaack/@zaaack/cache-loader
 
-[cover]: https://codecov.io/gh/webpack-contrib/cache-loader/branch/master/graph/badge.svg
-[cover-url]: https://codecov.io/gh/webpack-contrib/cache-loader
+[cover]: https://codecov.io/gh/zaaack/@zaaack/cache-loader/branch/master/graph/badge.svg
+[cover-url]: https://codecov.io/gh/zaaack/@zaaack/cache-loader
