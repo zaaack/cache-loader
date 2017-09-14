@@ -1,6 +1,6 @@
 {
   "name": "@zaaack/cache-loader",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Caches the result of following loaders on disk.",
   "main": "dist/cjs.js",
   "scripts": {
